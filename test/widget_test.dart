@@ -5,26 +5,33 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:gok_mobile_test/main.dart';
+import 'package:gok_mobile_test/repositories/user_github_repository.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  late UserGithubRepository repository;
+  late Dio dio;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  // funcao que configura tudo que for necessário antes de executar o teste
+  // inicializando dio e rep dentro do setUp, garante que cada teste tenha uma
+  // nova instancia de dio e rep fazendo com que cada teste seja independente.
+  setUp(
+    () {
+      dio = Dio();
+      repository = UserGithubRepository(dio: dio);
+    },
+  );
+  test(
+    'Deve retornar as informações do usuário',
+    () async {
+      try {
+        final apiResponse = await repository.getUserInfo('paulohm0');
+        expect(apiResponse, isNotNull);
+        print('deu certo');
+      } catch (error) {
+        fail('$error');
+      }
+    },
+  );
 }

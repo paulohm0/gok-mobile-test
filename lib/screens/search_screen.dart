@@ -1,6 +1,15 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:gok_mobile_test/models/user_github_model.dart';
+import 'package:gok_mobile_test/repositories/user_github_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+class UserListArgs {
+  final UserGithubModel userGithubModel;
+
+  UserListArgs({required this.userGithubModel});
+}
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -10,17 +19,28 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  late UserGithubModel userGithubModel;
+  final TextEditingController username = TextEditingController();
+  late UserGithubRepository repository;
+
+  @override
+  void initState() {
+    super.initState();
+    repository = UserGithubRepository(dio: Dio());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 40.0, right: 40.0),
+          padding: const EdgeInsets.symmetric(horizontal: 40.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/github-logo.png'),
-              const SizedBox(height: 80),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 100.0),
+                child: Image.asset('assets/github-logo.png'),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -29,6 +49,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: username,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white30,
@@ -66,7 +87,18 @@ class _SearchScreenState extends State<SearchScreen> {
                         foregroundColor: Colors.white,
                         elevation: 2,
                       ),
-                      onPressed: () {},
+                      onPressed: () async {
+                        final userModel =
+                            await repository.getUserInfo(username.text);
+                        // addPostFrameCallback evita que algo seja executado antes do método build esta pronto
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.pushNamed(
+                            arguments: UserListArgs(userGithubModel: userModel),
+                            context,
+                            '/user_list_screen',
+                          );
+                        });
+                      },
                       child: const Text(
                         'Buscar',
                         style: TextStyle(
