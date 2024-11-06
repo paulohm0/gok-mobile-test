@@ -1,8 +1,8 @@
 class UserGithubModel {
   final int? id;
-  final String? login;
+  final String login;
   final String? nodeId;
-  final String? avatarUrl;
+  final String avatarUrl;
   final String? gravatarId;
   final String? url;
   final String? htmlUrl;
@@ -17,13 +17,13 @@ class UserGithubModel {
   final String? receivedEventsUrl;
   final String? type;
   final String? name;
-  final String? company;
-  final String? location;
+  final String company;
+  final String location;
   final String? email;
   final int? publicRepos;
   final int? publicGists;
-  final int? followers;
-  final int? following;
+  final int followers;
+  final int following;
   final String? createdAt;
   final String? updatedAt;
 
@@ -69,7 +69,7 @@ class UserGithubModel {
       followersUrl: json['followers_url'],
       followingUrl: json['following_url'],
       gistsUrl: json['gists_url'],
-      starredUrl: json['starred_url'],
+      starredUrl: json['starred_url'] ?? '',
       subscriptionsUrl: json['subscriptions_url'],
       organizationsUrl: json['organizations_url'],
       reposUrl: json['repos_url'],
@@ -78,7 +78,7 @@ class UserGithubModel {
       type: json['type'],
       name: json['name'],
       company: json['company'] ?? '',
-      location: json['location'],
+      location: json['location'] ?? '',
       email: json['email'] ?? '',
       publicRepos: json['public_repos'],
       publicGists: json['public_gists'],
