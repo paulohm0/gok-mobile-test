@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gok_mobile_test/models/user_github_model.dart';
 import 'package:gok_mobile_test/repositories/user_github_repository.dart';
+import 'package:gok_mobile_test/viewmodel/main_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserListArgs {
@@ -20,6 +21,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late UserGithubModel userGithubModel;
+  late MainViewModel mainViewModel = MainViewModel();
   final TextEditingController username = TextEditingController();
   late UserGithubRepository repository;
 
@@ -81,29 +83,56 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                      ),
-                      onPressed: () async {
-                        final userModel =
-                            await repository.getUserInfo(username.text);
-                        // addPostFrameCallback evita que algo seja executado antes do método build esta pronto
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          Navigator.pushNamed(
-                            arguments: UserListArgs(userGithubModel: userModel),
-                            context,
-                            '/user_list_screen',
-                          );
-                        });
+                    child: ListenableBuilder(
+                      listenable: mainViewModel,
+                      builder: (context, child) {
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                          ),
+                          onPressed: mainViewModel.isLoading
+                              ? () {} // botao não sera clicável durante o loading
+                              : () async {
+                                  mainViewModel.searchLoading();
+                                  try {
+                                    final userModel = await repository
+                                        .getUserInfo(username.text);
+                                    // addPostFrameCallback evita que algo seja executado antes do método build esta pronto
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback(
+                                      (_) {
+                                        Navigator.pushNamed(
+                                            arguments: UserListArgs(
+                                                userGithubModel: userModel),
+                                            context,
+                                            '/user_list_screen');
+                                      },
+                                    );
+                                  } finally {
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 300));
+                                    mainViewModel.searchComplete();
+                                  }
+                                },
+                          child: mainViewModel.isLoading == false
+                              ? const Text(
+                                  'Buscar',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16),
+                                )
+                              : const Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white),
+                                  ),
+                                ),
+                        );
                       },
-                      child: const Text(
-                        'Buscar',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400, fontSize: 16),
-                      ),
                     ),
                   ),
                 ],
