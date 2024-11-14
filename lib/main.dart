@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gok_mobile_test/screens/repos_list_screen.dart';
 import 'package:gok_mobile_test/screens/search_screen.dart';
 import 'package:gok_mobile_test/screens/users_list_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,10 +22,11 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      initialRoute: '/search_screen',
+      initialRoute: '/repos_list_screen',
       routes: {
         '/search_screen': (context) => const SearchScreen(),
         '/user_list_screen': (context) => const UsersListScreen(),
+        '/repos_list_screen': (context) => const ReposListScreen(),
       },
     );
   }

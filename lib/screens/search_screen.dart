@@ -21,14 +21,23 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late UserGithubModel userGithubModel;
-  late MainViewModel mainViewModel = MainViewModel();
-  final TextEditingController username = TextEditingController();
+  late MainViewModel mainViewModel;
+  late TextEditingController username;
   late UserGithubRepository repository;
 
   @override
   void initState() {
     super.initState();
+    mainViewModel = MainViewModel();
+    username = TextEditingController();
     repository = UserGithubRepository(dio: Dio());
+  }
+
+  @override
+  void dispose() {
+    username.dispose();
+    mainViewModel.dispose();
+    super.dispose();
   }
 
   @override
