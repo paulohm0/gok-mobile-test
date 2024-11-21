@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-class MainViewModel extends ChangeNotifier {
+class SearchViewModel extends ChangeNotifier {
   bool isLoading = false;
 
   void searchLoading() {

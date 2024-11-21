@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gok_mobile_test/models/user_github_model.dart';
 import 'package:gok_mobile_test/repositories/user_github_repository.dart';
-import 'package:gok_mobile_test/viewmodel/main_view_model.dart';
+import 'package:gok_mobile_test/viewmodel/search_view_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserListArgs {
@@ -21,14 +21,14 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late UserGithubModel userGithubModel;
-  late MainViewModel mainViewModel;
+  late SearchViewModel searchViewModel;
   late TextEditingController username;
   late UserGithubRepository repository;
 
   @override
   void initState() {
     super.initState();
-    mainViewModel = MainViewModel();
+    searchViewModel = SearchViewModel();
     username = TextEditingController();
     repository = UserGithubRepository(dio: Dio());
   }
@@ -36,7 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     username.dispose();
-    mainViewModel.dispose();
+    searchViewModel.dispose();
     super.dispose();
   }
 
@@ -93,7 +93,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ListenableBuilder(
-                      listenable: mainViewModel,
+                      listenable: searchViewModel,
                       builder: (context, child) {
                         return ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -101,10 +101,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             foregroundColor: Colors.white,
                             elevation: 2,
                           ),
-                          onPressed: mainViewModel.isLoading
+                          onPressed: searchViewModel.isLoading
                               ? () {} // botao não sera clicável durante o loading
                               : () async {
-                                  mainViewModel.searchLoading();
+                                  searchViewModel.searchLoading();
                                   try {
                                     final userModel = await repository
                                         .getUserInfo(username.text);
@@ -122,10 +122,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                   } finally {
                                     await Future.delayed(
                                         const Duration(milliseconds: 300));
-                                    mainViewModel.searchComplete();
+                                    searchViewModel.searchComplete();
                                   }
                                 },
-                          child: mainViewModel.isLoading == false
+                          child: searchViewModel.isLoading == false
                               ? const Text(
                                   'Buscar',
                                   style: TextStyle(

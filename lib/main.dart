@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      initialRoute: '/repos_list_screen',
+      initialRoute: '/search_screen',
       routes: {
         '/search_screen': (context) => const SearchScreen(),
         '/user_list_screen': (context) => const UsersListScreen(),
