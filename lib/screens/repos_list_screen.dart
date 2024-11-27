@@ -16,10 +16,37 @@ class _ReposListScreenState extends State<ReposListScreen> {
   late UserListArgs userListArgs;
   final ReposUserGithubRepository reposUserGithubRepository =
       ReposUserGithubRepository(dio: Dio());
+  List<ReposUserGithubModel> listRepositories = [];
+  List<ReposUserGithubModel> filteredListRepositories = [];
+  final TextEditingController searchController = TextEditingController();
 
   Future<List<ReposUserGithubModel>> getUserListRepositories() async {
     return reposUserGithubRepository
         .getRepositoryUserInfo(userListArgs.userGithubModel.login);
+  }
+
+  Future<void> loadRepositories() async {
+    final repositories = await getUserListRepositories();
+    setState(() {
+      listRepositories = repositories;
+      filteredListRepositories = repositories;
+    });
+  }
+
+  void filterRepositories() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      filteredListRepositories = listRepositories
+          .where((repo) => repo.name!.toLowerCase().contains(query))
+          .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    loadRepositories();
+    searchController.addListener(filterRepositories);
+    super.initState();
   }
 
   @override
@@ -64,8 +91,9 @@ class _ReposListScreenState extends State<ReposListScreen> {
                     ),
                     height: 45,
                     width: 321,
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.search),
                         hintText: 'Buscar um repositório...',
                         enabledBorder: UnderlineInputBorder(
@@ -109,21 +137,24 @@ class _ReposListScreenState extends State<ReposListScreen> {
                       );
                     }
                     final repositoryList = snapshot.data!;
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: repositoryList.length,
-                      itemBuilder: (context, index) {
-                        final ReposUserGithubModel repository =
-                            repositoryList[index];
-                        return RepoCardWidget(
-                          projectName: repository.name ?? 'Sem nome',
-                          projectDescription:
-                              repository.description ?? 'Sem descrição',
-                          codeLanguage: repository.language ?? 'N/A',
-                          lastModified: repository.updatedAt ?? '',
-                        );
-                      },
-                    );
+                    return filteredListRepositories.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: repositoryList.length,
+                            itemBuilder: (context, index) {
+                              final ReposUserGithubModel repository =
+                                  filteredListRepositories[index];
+                              return RepoCardWidget(
+                                projectName: repository.name ?? 'Sem nome',
+                                projectDescription:
+                                    repository.description ?? 'Sem descrição',
+                                codeLanguage: repository.language ?? 'N/A',
+                                lastModified: repository.updatedAt ?? '',
+                                projectHtmlUrl: repository.htmlUrl ?? '',
+                              );
+                            },
+                          );
                   },
                 ),
               ),
