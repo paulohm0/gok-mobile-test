@@ -17,53 +17,70 @@ class _ReposListScreenState extends State<ReposListScreen> {
   final ReposUserGithubRepository reposUserGithubRepository =
       ReposUserGithubRepository(dio: Dio());
   List<ReposUserGithubModel> listRepositories = [];
-  List<ReposUserGithubModel> filteredListRepositories = [];
   final TextEditingController searchController = TextEditingController();
-
-  Future<List<ReposUserGithubModel>> getUserListRepositories() async {
-    return reposUserGithubRepository
-        .getRepositoryUserInfo(userListArgs.userGithubModel.login);
-  }
+  bool isLoading = true;
 
   Future<void> loadRepositories() async {
-    final repositories = await getUserListRepositories();
     setState(() {
-      listRepositories = repositories;
-      filteredListRepositories = repositories;
+      isLoading = true;
     });
+    try {
+      final repositories = await reposUserGithubRepository
+          .getRepositoryUserInfo(userListArgs.userGithubModel.login);
+      setState(() {
+        listRepositories = repositories;
+      });
+    } catch (e) {
+      rethrow;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
-  void filterRepositories() {
-    String query = searchController.text.toLowerCase();
-    setState(() {
-      filteredListRepositories = listRepositories
-          .where((repo) => repo.name!.toLowerCase().contains(query))
-          .toList();
-    });
+  List<ReposUserGithubModel> get filteredRepositories {
+    final query = searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      return listRepositories;
+    }
+    return listRepositories
+        .where((repo) => repo.name?.toLowerCase().contains(query) ?? false)
+        .toList();
   }
 
   @override
   void initState() {
-    loadRepositories();
-    searchController.addListener(filterRepositories);
     super.initState();
+    searchController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    userListArgs = ModalRoute.of(context)!.settings.arguments as UserListArgs;
+    loadRepositories();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    userListArgs = ModalRoute.of(context)!.settings.arguments as UserListArgs;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromRGBO(0, 0, 0, 0.06),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: CircleAvatar(
-                backgroundImage:
-                    NetworkImage(userListArgs.userGithubModel.avatarUrl),
-              ),
+            child: CircleAvatar(
+              backgroundImage:
+                  NetworkImage(userListArgs.userGithubModel.avatarUrl),
             ),
           ),
         ],
@@ -105,9 +122,7 @@ class _ReposListScreenState extends State<ReposListScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    width: 8.0,
-                  ),
+                  const SizedBox(width: 8.0),
                   SizedBox(
                     height: 45,
                     width: 50,
@@ -127,37 +142,28 @@ class _ReposListScreenState extends State<ReposListScreen> {
                 ],
               ),
               const SizedBox(height: 8.0),
-              Expanded(
-                child: FutureBuilder<List<ReposUserGithubModel>>(
-                  future: getUserListRepositories(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    final repositoryList = snapshot.data!;
-                    return filteredListRepositories.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: repositoryList.length,
-                            itemBuilder: (context, index) {
-                              final ReposUserGithubModel repository =
-                                  filteredListRepositories[index];
-                              return RepoCardWidget(
-                                projectName: repository.name ?? 'Sem nome',
-                                projectDescription:
-                                    repository.description ?? 'Sem descrição',
-                                codeLanguage: repository.language ?? 'N/A',
-                                lastModified: repository.updatedAt ?? '',
-                                projectHtmlUrl: repository.htmlUrl ?? '',
-                              );
-                            },
-                          );
-                  },
-                ),
-              ),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Expanded(
+                      child: filteredRepositories.isEmpty
+                          ? const Center(
+                              child: Text('Nenhum repositório encontrado'),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredRepositories.length,
+                              itemBuilder: (context, index) {
+                                final repository = filteredRepositories[index];
+                                return RepoCardWidget(
+                                  projectName: repository.name ?? 'Sem nome',
+                                  projectDescription:
+                                      repository.description ?? 'Sem descrição',
+                                  codeLanguage: repository.language ?? 'N/A',
+                                  lastModified: repository.updatedAt ?? '',
+                                  projectHtmlUrl: repository.htmlUrl ?? '',
+                                );
+                              },
+                            ),
+                    ),
             ],
           ),
         ),
