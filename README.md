@@ -18,4 +18,5 @@ link do teste : https://github.com/gok-dev/desafio-mobile-cross-developer
 
 <p float="left">
 <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWh2cXp6bjhtMHk4eWdvMGNzaXg5a2VwZmxhbjg2YmloOXFla2VqeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/cOybv8ZzfndefrXC8B/giphy.gif" alt="Tela do App" width="300"/>
+<img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGE1enl2cmIxaWZ4ZWswcHRlYWV1end4NGlvdzhzNWZ6OGhlejJoYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/i9kZOPdKZREY1Fkmvj/giphy.gif" alt="Tela do App" width="300"/>
 </p>
